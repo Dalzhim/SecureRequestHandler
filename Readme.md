@@ -101,7 +101,7 @@ There are two default validators provided with the library : `GenericSerializer`
 # Limitations
 
 1. Can't easily separate the Path and the Query String
-1. Doesn't produce errors for excess parameters
+1. Validation doesn't fail when a handler is invoked with unused inputs
 1. Only provides an adapter for Boost::Beast
 1. Compilation errors can be daunting
 1. Sending responses is currently done synchronously when using the provided adapter for Beast
