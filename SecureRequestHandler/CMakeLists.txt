@@ -23,7 +23,7 @@ target_sources(SecureRequestHandler INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/include/QueryStringValidator.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/QueryStringValidator.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/RequestAdapter.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/include/REST.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/include/SecureRequestHandler.hpp
 )
 target_link_libraries(SecureRequestHandler INTERFACE ${Boost_LIBRARIES})
 

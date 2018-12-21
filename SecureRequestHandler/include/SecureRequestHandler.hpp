@@ -1,12 +1,12 @@
-#ifndef REST_HPP
-#define REST_HPP
+#ifndef SECURE_REQUEST_HANDLER_HPP
+#define SECURE_REQUEST_HANDLER_HPP
 
-#include <optional>
 #include "EnsureSendWasInvoked.hpp"
 #include "GenericSerializer.hpp"
 #include "GenericValidator.hpp"
 #include "JSONSerializer.hpp"
 #include "JSONValidator.hpp"
+#include <optional>
 #include "QueryStringValidator.hpp"
 #include "RequestAdapter.hpp"
 #include <string>

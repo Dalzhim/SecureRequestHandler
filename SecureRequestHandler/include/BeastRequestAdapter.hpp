@@ -4,7 +4,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/beast/http.hpp>
 #include "RequestAdapter.hpp"
-#include "REST.hpp"
+#include "SecureRequestHandler.hpp"
 #include <string_view>
 #include <type_traits>
 
