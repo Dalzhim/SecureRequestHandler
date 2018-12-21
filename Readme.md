@@ -93,6 +93,11 @@ There are two default validators provided with the library : `GenericSerializer`
 1. rapidjson
 1. irqus::typestring
 
+# Attributions
+
+1. The typestring_is is a substitution for Non-Type Template Parameters coming in C++20. It comes from irrequietus's library : https://github.com/irrequietus/typestring/blob/8d52ee6ef21fcd353871661226d6f9e3312d1442/typestring.hh licensed under the Mozilla Public License 2.0.
+1. The Query String validation code is taken from the Folly library : https://github.com/facebook/folly/blob/da78383fec6133dbda05e345919ebdfa939c65eb/folly/Uri.cpp#L132 licensed under the Apache License 2.0
+
 # Limitations
 
 1. Can't easily separate the Path and the Query String
