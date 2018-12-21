@@ -11,7 +11,8 @@ While this library doesn't solve insufficient validation, it empowers the progra
 
 # Motivation
 
-The purpose of this library is to make it easier to write safer HTTP Request Handlers.
+This library is meant as a proof of concept to demonstrate we can write safer HTTP Request Handlers by leveraging C++'s type system and declarative programming. It does so by providing the `RequestHandler` type which wraps a user-defined handler and handles the input validation and output serialization so that user code can stick to well defined C++ types.
+The example program demonstrates the flexibility of the library by implementing a single handler server.
 
 There is an increasing amount of new C++ libraries geared towards hosting HTTP servers and there are many attempts at writing complete web frameworks that glue together the HTTP server, the REST Router and the JSON library.
 
