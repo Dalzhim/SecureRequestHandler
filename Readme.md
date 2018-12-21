@@ -89,9 +89,9 @@ There are two default validators provided with the library : `GenericSerializer`
 
 # Dependencies
 
-1. Boost::Beast
-1. rapidjson
-1. irqus::typestring
+1. [Boost::Beast](https://github.com/boostorg/beast)
+1. [rapidjson](https://github.com/Tencent/rapidjson/)
+1. [irqus::typestring](https://github.com/irrequietus/typestring)
 
 # Attributions
 
