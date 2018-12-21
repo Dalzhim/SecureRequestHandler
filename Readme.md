@@ -104,6 +104,7 @@ There are two default validators provided with the library : `GenericSerializer`
 1. Doesn't produce errors for excess parameters
 1. Only provides an adapter for Boost::Beast
 1. Compilation errors can be daunting
+1. Sending responses is currently done synchronously when using the provided adapter for Beast
 
 # Future work
 
