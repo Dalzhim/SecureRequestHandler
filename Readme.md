@@ -101,6 +101,7 @@ There are two default validators provided with the library : `GenericSerializer`
 
 # Future work
 
+1. Make use of `async_write` rather than `write` to send responses
 1. Split the contents of `PathParam` into `PathParam` and `QueryStringParam`
 1. Allow responses with custom headers
 1. `QueryStringSerializer`
