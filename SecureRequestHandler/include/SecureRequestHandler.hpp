@@ -96,56 +96,34 @@ template <typename T, typename Source, template <typename> typename Validator = 
 struct InputDesc
 {
 	using value_type = T;
+	using opt_value_type = std::optional<T>;
 	using source_type = Source;
 	using validator_type = Validator<T>;
+	
+	template <typename RequestType>
+	opt_value_type operator()(const RequestType& req) const
+	{
+		validator_type validator{};
+		source_type readSource{};
+		return validator(readSource(req));
+	}
 };
 
 namespace detail
 {
-//	Replace LazyInput?
-//	
-//	template <typename Arg, typename... Ops, std::size_t... Is>
-//	auto apply_impl(std::index_sequence<Is...>, Arg &&arg, Ops&&... ops) {
-//		std::tuple<decltype(std::declval<Ops>()(std::forward<Arg>(arg)))...> result;
-//		((std::get<Is>(result) = ops(arg)) && ...);
-//		return result;
-//	}
-//
-//	template <typename Arg, typename... Ops>
-//	auto apply(Arg &&arg, Ops&&... ops) {
-//		return apply_impl(std::index_sequence_for<Ops...>{},
-//											std::forward<Arg>(arg), std::forward<Ops>(ops)...);
-//	}
-	template <typename Input>
-	struct LazyInput
-	{
-		using value_type = typename Input::value_type;
-		using validator_type = typename Input::validator_type;
-		using source_type = typename Input::source_type;
-		
-		template <typename RequestType>
-		bool initialize(const RequestType& req)
-		{
-			value = validator_type{}(source_type{}.template operator()(req));
-			return static_cast<bool>(value);
-		}
-		
-		std::optional<value_type> value;
-	};
-	
 	template <typename Output, typename ... Inputs, typename RequestType, typename Send, typename Handler, std::size_t ... Is>
 	auto invokeHandlerImpl(const RequestType& req, const Send& send, Handler&& handler, std::index_sequence<Is...>) -> SendWasInvoked
 	{
 		static_assert(sizeof...(Inputs) == sizeof...(Is));
-		std::tuple<LazyInput<Inputs>...> params;
-		if ((... && std::get<Is>(params).initialize(req))) {
+		std::tuple<std::optional<typename Inputs::value_type>...> params;
+		if (((std::get<Is>(params) = Inputs{}(req)) && ...)) {
 			return std::invoke(
 				handler,
 				RequestAdapter<RequestType>::template makeSender<typename Output::serializer_type, EnsureSendWasInvoked<Send>>(
 					req,
 					EnsureSendWasInvoked<Send>{send}
 				),
-				(*std::get<Is>(params).value)...
+				(*std::get<Is>(params))...
 			);
 		} else {
 			return RequestAdapter<RequestType>::template makeSender<typename Output::serializer_type, EnsureSendWasInvoked<Send>>(
