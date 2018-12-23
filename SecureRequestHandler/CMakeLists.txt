@@ -20,6 +20,9 @@ target_sources(SecureRequestHandler INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/include/JSONSerializer.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/JSONValidator.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/JSONValidator.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/include/QueryString.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/include/QueryStringSerializer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/include/QueryStringSerializer.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/QueryStringValidator.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/QueryStringValidator.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/RequestAdapter.hpp

@@ -7,6 +7,7 @@
 #include "JSONSerializer.hpp"
 #include "JSONValidator.hpp"
 #include <optional>
+#include "QueryStringSerializer.hpp"
 #include "QueryStringValidator.hpp"
 #include "RequestAdapter.hpp"
 #include <string>

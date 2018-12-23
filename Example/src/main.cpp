@@ -73,6 +73,25 @@ rapidjson::Value SerializeJSON<CustomerInfo>(const CustomerInfo& v, rapidjson::D
 	return element;
 }
 
+template <>
+QueryStringBuffer SerializeQueryString<Address>(const Address& v)
+{
+	return QueryStringBuffer{std::initializer_list<QueryStringBuffer::value_type>{
+		{"number", GenericSerialize(v.number)},
+		{"street", GenericSerialize(v.street)}
+	}};
+}
+
+template <>
+QueryStringBuffer SerializeQueryString<CustomerInfo>(const CustomerInfo& v)
+{
+	return QueryStringBuffer{std::initializer_list<QueryStringBuffer::value_type>{
+		{"firstName", GenericSerialize(v.firstName)},
+		{"lastName", GenericSerialize(v.lastName)},
+		{"address", QueryStringSerializer<Address>{}(v.address)}
+	}};
+}
+
 //------------------------------------------------------------------------------
 
 int main(int argc, char* argv[])

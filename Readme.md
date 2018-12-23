@@ -111,7 +111,6 @@ There are two default validators provided with the library : `GenericSerializer`
 1. Make use of `async_write` rather than `write` to send responses
 1. Split the contents of `PathParam` into `PathParam` and `QueryStringParam`
 1. Allow responses with custom headers
-1. `QueryStringSerializer`
 1. `OutputDesc<void>`
 1. Leverage C++20 Concepts
 1. Leverage C++20 Non-Type Template Parameters

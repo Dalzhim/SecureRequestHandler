@@ -9,56 +9,10 @@
 #include <string_view>
 #include <type_traits>
 #include "GenericValidator.hpp"
+#include "QueryString.hpp"
 #include <vector>
 
-using QueryString = std::vector<std::pair<std::string_view, std::string_view>>;
-
-struct QueryStringValidatorBase
-{
-	QueryString getQueryParams(std::string_view) const;
-};
-
-static std::optional<unsigned int> parseHexDigit(unsigned char c)
-{
-	if (c >= '0' && c <= '9') {
-		return {c - '0'};
-	} else if (c >= 'a' && c <= 'f') {
-		return {c - 'a' + 10};
-	} else if (c >= 'A' && c <= 'F') {
-		return {c - 'A' + 10};
-	}
-	return std::nullopt;
-}
-
-inline std::optional<std::string> decodeURIComponent(std::string_view str)
-{
-	std::string result;
-	const int maxPositionLastPercent = str.length() - 2;
-	
-	for (std::string::size_type i = 0, n = str.length(); i < n; i++) {
-		char c = str[i];
-		if (c != '%'){
-			if (c == '+')
-				result += ' ';
-			else
-				result += c;
-		} else {
-			if (i < maxPositionLastPercent) {
-				const auto d1Opt = parseHexDigit(str[i+1]);
-				const auto d2Opt = parseHexDigit(str[i+2]);
-				if (d1Opt && d2Opt) {
-					result += static_cast<char>(*d1Opt * 16 + *d2Opt);
-					i += 2;
-				} else {
-					return std::nullopt;
-				}
-			} else {
-				return std::nullopt;
-			}
-		}
-	}
-	return result;
-}
+std::optional<std::string> decodeURIComponent(std::string_view str);
 
 template <typename T>
 std::optional<T> ValidateQueryString(const QueryString& queryString)
@@ -85,6 +39,11 @@ std::optional<T> ValidateQueryString(const QueryString& queryString, std::string
 		}
 	}
 }
+
+struct QueryStringValidatorBase
+{
+	QueryString getQueryParams(std::string_view) const;
+};
 
 template <typename T>
 struct QueryStringValidator : private QueryStringValidatorBase
