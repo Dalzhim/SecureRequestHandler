@@ -115,4 +115,3 @@ There are two default validators provided with the library : `GenericSerializer`
 1. `OutputDesc<void>`
 1. Leverage C++20 Concepts
 1. Leverage C++20 Non-Type Template Parameters
-1. Replace LazyInput with other variadic solutions
