@@ -52,8 +52,11 @@ struct BeastSendResponse
 	auto operator()(ValueType&& val)
 	{
 		boost::beast::http::response<boost::beast::http::string_body> response{boost::beast::http::status::ok, req.version()};
-		response.body() = SerializerType{}(val);
-		response.prepare_payload();
+		static_assert(!std::is_same_v<typename SerializerType::value_type, void>, "Can't provide a body for Output<void, /* … */>");
+		if constexpr (!std::is_same_v<typename SerializerType::value_type, void>) {
+			response.body() = SerializerType{}(val);
+			response.prepare_payload();
+		}
 		return send(std::move(response));
 	}
 	
@@ -68,8 +71,11 @@ struct BeastSendResponse
 	auto operator()(boost::beast::http::status status, ValueType&& val)
 	{
 		boost::beast::http::response<boost::beast::http::string_body> response{status, req.version()};
-		response.body() = SerializerType{}(val);
-		response.prepare_payload();
+		static_assert(!std::is_same_v<typename SerializerType::value_type, void>, "Can't provide a body for Output<void, /* ... */>");
+		if constexpr (!std::is_same_v<typename SerializerType::value_type, void>) {
+			response.body() = SerializerType{}(val);
+			response.prepare_payload();
+		}
 		return send(std::move(response));
 	}
 	

@@ -19,6 +19,8 @@ std::string makeIntoString(const QueryStringBuffer&);
 template <typename T>
 struct QueryStringSerializer
 {
+	using value_type = T;
+	
 	std::string operator()(const T& t) const
 	{
 		return makeIntoString(SerializeQueryString<T>(t));

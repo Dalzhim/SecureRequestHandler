@@ -41,6 +41,8 @@ rapidjson::Value SerializeJSON<std::string_view>(const std::string_view&, rapidj
 template <typename T>
 struct JSONSerializer
 {
+	using value_type = T;
+	
 	std::string operator()(const T& t) const
 	{
 		rapidjson::Document doc{rapidjson::kObjectType};

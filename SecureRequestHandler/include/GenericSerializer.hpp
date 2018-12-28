@@ -37,6 +37,8 @@ std::string GenericSerialize<std::string_view>(const std::string_view&);
 template <typename T>
 struct GenericSerializer
 {
+	using value_type = T;
+	
 	std::string operator()(const T& t) const
 	{
 		return GenericSerialize<T>(t);
