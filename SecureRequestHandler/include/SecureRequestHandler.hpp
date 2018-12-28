@@ -53,6 +53,9 @@ struct HeaderParam
 {
 	static_assert(!std::is_same_v<Key, typestring_is("")>, "Reading from headers requires a name parameter.");
 	
+	template <typename T>
+	using default_validator_type = GenericValidator<T>;
+	
 	template <typename RequestType>
 	std::string_view operator()(const RequestType& req) const
 	{
@@ -63,14 +66,31 @@ struct HeaderParam
 };
 struct PathParam
 {
+	template <typename T>
+	using default_validator_type = GenericValidator<T>;
+	
 	template <typename RequestType>
 	std::string_view operator()(const RequestType& req) const
 	{
 		return RequestAdapter<RequestType>::getPath(req);
 	}
 };
+struct QueryStringParam
+{
+	template <typename T>
+	using default_validator_type = QueryStringValidator<T>;
+	
+	template <typename RequestType>
+	std::string_view operator()(const RequestType& req) const
+	{
+		return RequestAdapter<RequestType>::getQueryString(req);
+	}
+};
 struct VerbParam
 {
+	template <typename T>
+	using default_validator_type = GenericValidator<T>;
+	
 	template <typename RequestType>
 	std::string_view operator()(const RequestType& req) const
 	{
@@ -79,6 +99,9 @@ struct VerbParam
 };
 struct BodyParam
 {
+	template <typename T>
+	using default_validator_type = GenericValidator<T>;
+	
 	template <typename RequestType>
 	std::string_view operator()(const RequestType& req) const
 	{
@@ -93,7 +116,7 @@ struct OutputDesc
 	using serializer_type = Serializer<T>;
 };
 
-template <typename T, typename Source, template <typename> typename Validator = GenericValidator>
+template <typename T, typename Source, template <typename> typename Validator = Source::template default_validator_type>
 struct InputDesc
 {
 	using value_type = T;

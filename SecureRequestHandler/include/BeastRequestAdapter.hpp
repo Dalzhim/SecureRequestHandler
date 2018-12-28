@@ -107,7 +107,25 @@ struct RequestAdapter<boost::beast::http::request<BodyType>>
 	static std::string_view getPath(const request_type& req)
 	{
 		const auto sv = req.target();
-		return std::string_view{sv.data(), sv.size()};
+		const auto itBegin = sv.begin();
+		const auto itEnd = sv.end();
+		auto itSeparateur = std::find(itBegin, itEnd, '?');
+		const auto distance = std::distance(itBegin, itSeparateur);
+		return std::string_view{sv.data(), static_cast<std::string_view::size_type>(distance)};
+	}
+	
+	static std::string_view getQueryString(const request_type& req)
+	{
+		const auto sv = req.target();
+		const auto itBegin = sv.begin();
+		const auto itEnd = sv.end();
+		auto itSeparateur = std::find(itBegin, itEnd, '?');
+		if (itSeparateur != itEnd) {
+			const auto distance = std::distance(itBegin, itSeparateur) + 1;
+			return std::string_view{sv.data() + distance, static_cast<std::string_view::size_type>(sv.size() - distance)};
+		} else {
+			return std::string_view{sv.data() + sv.size(), 0};
+		}
 	}
 	
 	static std::string_view getVerb(const request_type& req)

@@ -97,19 +97,20 @@ QueryStringBuffer SerializeQueryString<CustomerInfo>(const CustomerInfo& v)
 int main(int argc, char* argv[])
 {
 	BeastRequestHandler<
-		OutputDesc<CustomerInfo, JSONSerializer>,
+		OutputDesc<CustomerInfo, QueryStringSerializer>,
 		InputDesc<std::string_view, HeaderParam<typestring_is("host")>>,
 		InputDesc<CustomerInfo, HeaderParam<typestring_is("customer")>, JSONValidator>,
 		InputDesc<CustomerInfo, BodyParam, QueryStringValidator>,
 		InputDesc<std::string_view, VerbParam>,
-		InputDesc<std::string_view, PathParam>
+		InputDesc<std::string_view, PathParam>,
+		InputDesc<CustomerInfo, QueryStringParam>
 	> reqHandler{
-		[](auto send, auto p1, auto p2, auto p3, auto p4, auto p5) {
-			std::cout << p1 << '\n' << p2 << '\n' << p3 << '\n' << p4 << '\n' << p5 << '\n';
+		[](auto send, auto p1, auto p2, auto p3, auto p4, auto p5, auto p6) {
+			std::cout << p1 << '\n' << p2 << '\n' << p3 << '\n' << p4 << '\n' << p5 << '\n' << p6 << '\n';
 			return send(boost::beast::http::status::ok, p2);
 		}
 	};
 	std::cout << "Server is starting up... Use the following command to try it out...\n"
-						<< "curl -v \"http://127.0.0.1:8080/Exemple\" -d \"firstName=Gabriel&lastName=Aubut-Lussier&address=number%3D25%26street%3DC%252B%252B%2520Montr%25C3%25A9al\" -H \"customer: {\\\"firstName\\\":\\\"Gabriel\\\",\\\"lastName\\\":\\\"Aubut-Lussier\\\",\\\"address\\\":{\\\"number\\\":25,\\\"street\\\":\\\"C++ Montréal\\\"}}\"\n";
+	<< "curl -v \"http://127.0.0.1:8080/Exemple?firstName=Gabriel&lastName=Aubut-Lussier&address=number%3D25%26street%3DC%252B%252B%2520Montr%25C3%25A9al#fragment\" -d \"firstName=Gabriel&lastName=Aubut-Lussier&address=number%3D25%26street%3DC%252B%252B%2520Montr%25C3%25A9al\" -H \"customer: {\\\"firstName\\\":\\\"Gabriel\\\",\\\"lastName\\\":\\\"Aubut-Lussier\\\",\\\"address\\\":{\\\"number\\\":25,\\\"street\\\":\\\"C++ Montréal\\\"}}\"\n";
 	handleRequests(reqHandler);
 }
