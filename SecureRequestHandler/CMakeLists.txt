@@ -11,7 +11,6 @@ target_include_directories(SecureRequestHandler INTERFACE
 )
 target_sources(SecureRequestHandler INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/include/BeastRequestAdapter.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/include/EnsureSendWasInvoked.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/GenericSerializer.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/GenericSerializer.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/GenericValidator.cpp

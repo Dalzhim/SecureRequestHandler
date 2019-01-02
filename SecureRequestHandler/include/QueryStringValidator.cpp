@@ -62,7 +62,7 @@ static std::optional<unsigned int> parseHexDigit(unsigned char c)
 std::optional<std::string> decodeURIComponent(std::string_view str)
 {
 	std::string result;
-	const int maxPositionLastPercent = str.length() - 2;
+	const std::string::size_type maxPositionLastPercent = str.length() - 2;
 	
 	for (std::string::size_type i = 0, n = str.length(); i < n; i++) {
 		char c = str[i];
