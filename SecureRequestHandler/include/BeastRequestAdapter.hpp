@@ -8,85 +8,55 @@
 #include <string_view>
 #include <type_traits>
 
-// This is the C++11 equivalent of a generic lambda.
-// The function object is used to send an HTTP message.
-template<class Stream>
-struct send_lambda
+template <typename RequestType, typename SerializerType>
+struct BeastMakeResponse
 {
-	Stream& stream_;
-	bool& close_;
-	boost::system::error_code& ec_;
+	using request_type = RequestType;
+	using response_body_type = boost::beast::http::string_body;
+	using response_type = boost::beast::http::response<response_body_type>;
 	
-	explicit
-	send_lambda(
-							Stream& stream,
-							bool& close,
-							boost::system::error_code& ec)
-	: stream_(stream)
-	, close_(close)
-	, ec_(ec)
-	{}
-	
-	template<bool isRequest, class Body, class Fields>
-	void
-	operator()(boost::beast::http::message<isRequest, Body, Fields>&& msg) const
-	{
-		// Determine if we should close the connection after
-		close_ = msg.need_eof();
-		
-		// We need the serializer here because the serializer requires
-		// a non-const file_body, and the message oriented version of
-		// http::write only works with const messages.
-		boost::beast::http::serializer<isRequest, Body, Fields> sr{msg};
-		boost::beast::http::write(stream_, sr, ec_);
-	}
-};
-
-template <typename RequestType, typename SerializerType, typename Send>
-struct BeastSendResponse
-{
-	BeastSendResponse(const RequestType& req, const Send& send) : req{req}, send{send}
+	BeastMakeResponse(const request_type& req) : req{req}
 	{}
 	
 	template <typename ValueType>
 	auto operator()(ValueType&& val)
 	{
-		boost::beast::http::response<boost::beast::http::string_body> response{boost::beast::http::status::ok, req.version()};
+		response_type response{boost::beast::http::status::ok, req.version()};
 		static_assert(!std::is_same_v<typename SerializerType::value_type, void>, "Can't provide a body for Output<void, /* … */>");
 		if constexpr (!std::is_same_v<typename SerializerType::value_type, void>) {
 			response.body() = SerializerType{}(val);
 			response.prepare_payload();
 		}
-		return send(std::move(response));
+		return response;
 	}
 	
 	auto operator()(boost::beast::http::status status)
 	{
-		return send(
-			boost::beast::http::response<boost::beast::http::empty_body>{status, req.version()}
-		);
+		return response_type{status, req.version()};
 	}
 	
 	template <typename ValueType>
 	auto operator()(boost::beast::http::status status, ValueType&& val)
 	{
-		boost::beast::http::response<boost::beast::http::string_body> response{status, req.version()};
+		response_type response{status, req.version()};
 		static_assert(!std::is_same_v<typename SerializerType::value_type, void>, "Can't provide a body for Output<void, /* ... */>");
 		if constexpr (!std::is_same_v<typename SerializerType::value_type, void>) {
 			response.body() = SerializerType{}(val);
 			response.prepare_payload();
 		}
-		return send(std::move(response));
+		return response;
 	}
 	
-	const RequestType& req;
-	const Send& send;
+	const request_type& req;
 };
 
-template <typename BodyType>
-struct RequestAdapter<boost::beast::http::request<BodyType>>
+template <>
+struct RequestAdapter<boost::beast::http::request<boost::beast::http::string_body>>
 {
-	using request_type = boost::beast::http::request<BodyType>;
+	using request_body_type = boost::beast::http::string_body;
+	using request_type = boost::beast::http::request<request_body_type>;
+	using response_body_type = boost::beast::http::string_body;
+	using response_type = boost::beast::http::response<response_body_type>;
 	using status_type = boost::beast::http::status;
 	
 	constexpr static status_type BadRequest = status_type::bad_request;
@@ -105,7 +75,7 @@ struct RequestAdapter<boost::beast::http::request<BodyType>>
 	
 	static std::string_view getBody(const request_type& req)
 	{
-		static_assert(!std::is_same_v<BodyType, std::string>, "Boost::Beast request adapter only supports boost::beast::http::string_body and boost::beast::http::empty_body");
+		static_assert(!std::is_same_v<request_body_type, std::string>, "Boost::Beast request adapter only supports boost::beast::http::string_body and boost::beast::http::empty_body");
 		const auto sv = std::string_view{req.body()};
 		return std::string_view{sv.data(), sv.size()};
 	}
@@ -140,17 +110,11 @@ struct RequestAdapter<boost::beast::http::request<BodyType>>
 		return std::string_view{sv.data(), sv.size()};
 	}
 	
-	template <typename SerializerType, typename Send>
-	using sender_type = BeastSendResponse<request_type, SerializerType, Send>;
-	
-	template <typename SerializerType, typename Send>
-	static auto makeSender(const request_type& req, const Send& send)
-	{
-		return BeastSendResponse<request_type, SerializerType, Send>{req, send};
-	}
+	template <typename SerializerType>
+	using make_response_type = BeastMakeResponse<request_type, SerializerType>;
 };
 
 template <typename OutputDesc, typename ... InputDesc>
-using BeastRequestHandler = RequestHandler<boost::beast::http::request<boost::beast::http::string_body>, send_lambda<boost::asio::ip::tcp::socket>, OutputDesc, InputDesc...>;
+using BeastRequestHandler = RequestHandler<boost::beast::http::request<boost::beast::http::string_body>, OutputDesc, InputDesc...>;
 
 #endif

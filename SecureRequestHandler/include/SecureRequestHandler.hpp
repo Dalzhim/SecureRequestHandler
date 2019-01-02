@@ -1,7 +1,6 @@
 #ifndef SECURE_REQUEST_HANDLER_HPP
 #define SECURE_REQUEST_HANDLER_HPP
 
-#include "EnsureSendWasInvoked.hpp"
 #include "GenericSerializer.hpp"
 #include "GenericValidator.hpp"
 #include "JSONSerializer.hpp"
@@ -135,64 +134,60 @@ struct InputDesc
 
 namespace detail
 {
-	template <typename Output, typename ... Inputs, typename RequestType, typename Send, typename Handler, std::size_t ... Is>
-	auto invokeHandlerImpl(const RequestType& req, const Send& send, Handler&& handler, std::index_sequence<Is...>) -> SendWasInvoked
+	template <typename Output, typename ... Inputs, typename RequestType, typename Handler, std::size_t ... Is>
+	auto invokeHandlerImpl(const RequestType& req, Handler&& handler, std::index_sequence<Is...>) -> typename RequestAdapter<RequestType>::response_type
 	{
+		using serializer_type = typename Output::serializer_type;
+		using make_response_type = typename RequestAdapter<RequestType>::template make_response_type<serializer_type>;
 		static_assert(sizeof...(Inputs) == sizeof...(Is));
+		
 		std::tuple<std::optional<typename Inputs::value_type>...> params;
 		if (((std::get<Is>(params) = Inputs{}(req)) && ...)) {
 			return std::invoke(
 				handler,
-				RequestAdapter<RequestType>::template makeSender<typename Output::serializer_type, EnsureSendWasInvoked<Send>>(
-					req,
-					EnsureSendWasInvoked<Send>{send}
-				),
+				make_response_type{req},
 				(*std::get<Is>(params))...
 			);
 		} else {
-			return RequestAdapter<RequestType>::template makeSender<typename Output::serializer_type, EnsureSendWasInvoked<Send>>(
-				req,
-				EnsureSendWasInvoked<Send>{send}
-			)(RequestAdapter<RequestType>::BadRequest);
+			return make_response_type{req}(RequestAdapter<RequestType>::BadRequest);
 		}
 	}
 	
-	template <typename Output, typename ... Inputs, typename RequestType, typename Send, typename Handler>
-	auto invokeHandler(const RequestType& req, const Send& send, Handler&& handler) -> void
+	template <typename Output, typename ... Inputs, typename RequestType, typename Handler>
+	auto invokeHandler(const RequestType& req, Handler&& handler) -> typename RequestAdapter<RequestType>::response_type
 	{
-		invokeHandlerImpl<Output, Inputs...>(
+		return invokeHandlerImpl<Output, Inputs...>(
 			req,
-			send,
 			std::forward<Handler>(handler),
 			std::index_sequence_for<Inputs...>{}
 		);
 	}
 }
 
-template <typename Output, typename ... Inputs, typename RequestType, typename Send, typename Handler>
-auto handleRequest(const RequestType& req, const Send& send, Handler&& handler) -> void
+template <typename Output, typename ... Inputs, typename RequestType, typename Handler>
+auto handleRequest(const RequestType& req, Handler&& handler) -> typename RequestAdapter<RequestType>::response_type
 {
 	return detail::invokeHandler<Output, Inputs...>(
 		req,
-		send,
 		std::forward<Handler>(handler)
 	);
 }
 
-template <typename RequestType, typename Send, typename Output, typename ... Inputs>
+template <typename RequestType, typename Output, typename ... Inputs>
 struct RequestHandler
 {
+	using request_adapter = RequestAdapter<RequestType>;
 	using serializer_type = typename Output::serializer_type;
-	using sender_type = typename RequestAdapter<RequestType>::template sender_type<serializer_type, EnsureSendWasInvoked<Send>>;
-	using handler_type = std::function<SendWasInvoked(sender_type, typename Inputs::value_type...)>;
+	using response_type = typename request_adapter::response_type;
+	using make_response_type = typename request_adapter::template make_response_type<serializer_type>;
+	using handler_type = std::function<response_type(make_response_type, typename Inputs::value_type...)>;
 	
 	RequestHandler(handler_type&& handler) : handler(std::forward<handler_type>(handler)) {}
 	
-	void operator()(const RequestType& req, const Send& send) const
+	response_type operator()(const RequestType& req) const
 	{
 		return detail::invokeHandler<Output, Inputs...>(
 			req,
-			send,
 			handler
 		);
 	}

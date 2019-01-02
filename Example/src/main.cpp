@@ -105,9 +105,9 @@ int main(int argc, char* argv[])
 		InputDesc<std::string_view, PathParam>,
 		InputDesc<CustomerInfo, QueryStringParam>
 	> reqHandler{
-		[](auto send, auto p1, auto p2, auto p3, auto p4, auto p5, auto p6) {
+		[](auto makeResponse, auto p1, auto p2, auto p3, auto p4, auto p5, auto p6) {
 			std::cout << p1 << '\n' << p2 << '\n' << p3 << '\n' << p4 << '\n' << p5 << '\n' << p6 << '\n';
-			return send(boost::beast::http::status::ok, p2);
+			return makeResponse(boost::beast::http::status::ok, p2);
 		}
 	};
 	std::cout << "Server is starting up... Use the following command to try it out...\n"

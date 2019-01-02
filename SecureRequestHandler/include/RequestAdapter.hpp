@@ -8,7 +8,11 @@ template <typename RequestType>
 struct RequestAdapter
 {
 	using request_type = RequestType;
+	using response_type = void;
 	using status_type = unsigned int;
+	
+	template <typename SerializerType>
+	using make_response_type = void;
 	
 	constexpr static status_type BadRequest = 400u;
 	constexpr static status_type Ok = 200u;
@@ -34,12 +38,6 @@ struct RequestAdapter
 	}
 	
 	static std::string_view getVerb(const request_type&)
-	{
-		static_assert(!std::is_same_v<RequestType, RequestType>, "Specialize RequestAdapter for your http library.");
-	}
-	
-	template <typename SerializerType, typename Send>
-	static auto makeSender(const RequestType&, const Send&)
 	{
 		static_assert(!std::is_same_v<RequestType, RequestType>, "Specialize RequestAdapter for your http library.");
 	}

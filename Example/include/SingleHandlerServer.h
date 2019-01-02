@@ -24,6 +24,40 @@ using handler_type = std::function<return_type(request_type)>;
 
 int handleRequests(handler_type);
 
+// This is the C++11 equivalent of a generic lambda.
+// The function object is used to send an HTTP message.
+template<class Stream>
+struct send_lambda
+{
+	Stream& stream_;
+	bool& close_;
+	boost::system::error_code& ec_;
+	
+	explicit
+	send_lambda(
+							Stream& stream,
+							bool& close,
+							boost::system::error_code& ec)
+	: stream_(stream)
+	, close_(close)
+	, ec_(ec)
+	{}
+	
+	template<bool isRequest, class Body, class Fields>
+	void
+	operator()(boost::beast::http::message<isRequest, Body, Fields>&& msg) const
+	{
+		// Determine if we should close the connection after
+		close_ = msg.need_eof();
+		
+		// We need the serializer here because the serializer requires
+		// a non-const file_body, and the message oriented version of
+		// http::write only works with const messages.
+		boost::beast::http::serializer<isRequest, Body, Fields> sr{msg};
+		boost::beast::http::write(stream_, sr, ec_);
+	}
+};
+
 // This function produces an HTTP response for the given
 // request. The type of the response object depends on the
 // contents of the request, so the interface requires the
@@ -38,7 +72,7 @@ handle_request(
 							 Send&& send,
 							 HandlerType handler)
 {
-	handler(req, std::forward<Send>(send));
+	send(handler(req));
 }
 
 //------------------------------------------------------------------------------
